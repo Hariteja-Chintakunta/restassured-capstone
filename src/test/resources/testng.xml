@@ -1,0 +1,18 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Rest Assured API Suite">
+    <listeners>
+        <listener class-name="com.capstone.reporting.UserOperationReportListener"/>
+    </listeners>
+    <test name="API and reporting tests">
+        <classes>
+            <class name="BuildCheckTest"/>
+            <class name="com.capstone.reporting.UserOperationReporterTest"/>
+            <class name="com.capstone.tests.CreateUserTest"/>
+            <class name="com.capstone.tests.DeleteUserTest"/>
+            <class name="com.capstone.tests.EnvConfigTest"/>
+            <class name="com.capstone.tests.GetAllUsersTest"/>
+            <class name="com.capstone.tests.GetUserByIdTest"/>
+            <class name="com.capstone.tests.UpdateUserTest"/>
+        </classes>
+    </test>
+</suite>

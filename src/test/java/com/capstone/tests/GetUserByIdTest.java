@@ -1,13 +1,16 @@
 package com.capstone.tests;
 
 import com.capstone.base.ApiBase;
+import com.capstone.reporting.UserOperationReportListener;
 import com.capstone.utils.TestDataUtil;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import static com.capstone.utils.UserApiHelper.*;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
+@Listeners(UserOperationReportListener.class)
 public class GetUserByIdTest extends ApiBase {
 
     @Test(description = "TC02 - Get user by ID")

@@ -1,13 +1,16 @@
 package com.capstone.tests;
 
 import com.capstone.base.ApiBase;
+import com.capstone.reporting.UserOperationReportListener;
 import com.capstone.utils.TestDataUtil;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import static com.capstone.utils.UserApiHelper.*;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
+@Listeners(UserOperationReportListener.class)
 public class CreateUserTest extends ApiBase {
 
     @Test(description = "TC03 - Create user, then GET the same user")
@@ -15,17 +18,7 @@ public class CreateUserTest extends ApiBase {
         String name = TestDataUtil.randomName();
         String email = TestDataUtil.randomEmail();
 
-        // 1. create a user (POST) and 2. fetch the userId
-        int id = given().spec(requestSpec)
-                .body(TestDataUtil.userJson(name, email, "male", "active"))
-                .when().post(USERS)
-                .then().log().ifValidationFails()
-                .statusCode(201)
-                .time(lessThan(MAX_TIME_MS))
-                .body("id", notNullValue())
-                .body("name", equalTo(name))
-                .body("email", equalTo(email))
-                .extract().path("id");
+        int id = com.capstone.utils.UserApiHelper.createUser(requestSpec, name, email);
 
         // 3. get the same user with the same userId (GET)
         given().spec(requestSpec)

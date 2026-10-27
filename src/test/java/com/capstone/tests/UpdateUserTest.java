@@ -1,13 +1,16 @@
 package com.capstone.tests;
 
 import com.capstone.base.ApiBase;
+import com.capstone.reporting.UserOperationReportListener;
 import com.capstone.utils.TestDataUtil;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import static com.capstone.utils.UserApiHelper.*;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
+@Listeners(UserOperationReportListener.class)
 public class UpdateUserTest extends ApiBase {
 
     @Test(description = "TC04 - Update user, then GET the same user")
@@ -19,16 +22,8 @@ public class UpdateUserTest extends ApiBase {
         int id = createUser(requestSpec, name, email);
         String updatedName = name + " Updated";
 
-        // 3. update the user with the same userId (PUT)
-        given().spec(requestSpec)
-                .body(TestDataUtil.userJson(updatedName, email, "male", "inactive"))
-                .when().put(USERS + "/" + id)
-                .then().log().ifValidationFails()
-                .statusCode(200)
-                .time(lessThan(MAX_TIME_MS))
-                .body("id", equalTo(id))
-                .body("name", equalTo(updatedName))
-                .body("status", equalTo("inactive"));
+        com.capstone.utils.UserApiHelper.updateUser(
+                requestSpec, id, updatedName, email, "male", "inactive");
 
         // 4. get the same user with the same userId (GET) and confirm the change was saved
         given().spec(requestSpec)
