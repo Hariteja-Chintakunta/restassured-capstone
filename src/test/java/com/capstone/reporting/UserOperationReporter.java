@@ -58,6 +58,9 @@ public final class UserOperationReporter {
 
     public static synchronized void recordTestResult(ITestResult result, String status) {
         String testName = testName(result);
+        if (result.getTestClass().getName().endsWith(".EnvConfigTest")) {
+            return;
+        }
         String description = result.getMethod().getDescription();
         long duration = result.getEndMillis() - result.getStartMillis();
         Throwable throwable = result.getThrowable();
@@ -67,6 +70,9 @@ public final class UserOperationReporter {
         TEST_RESULTS.add(testResult);
 
         ExtentTest extentTest = extent.createTest(testName);
+        if (testName.contains("GetAllUsersTest.getAllUsers")) {
+            extentTest.assignCategory("GET ALL USERS");
+        }
         extentTest.info("Status: " + status);
         extentTest.info("Duration: " + duration + " ms");
         if (!testResult.description.isBlank()) {
@@ -243,13 +249,21 @@ public final class UserOperationReporter {
                 .append("pre{white-space:pre-wrap;background:#f4f4f4;padding:1rem}")
                 .append("section{border-bottom:1px solid #ccc;padding:1rem 0}")
                 .append("table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:.6rem;text-align:left}")
+                .append(".highlighted-test{background:#e8f4ff;font-weight:600}")
+                .append(".test-badge{display:inline-block;margin-left:.5rem;padding:.2rem .5rem;background:#1769aa;color:#fff;border-radius:.25rem}")
                 .append("</style></head><body><h1>TEST EXECUTION SUMMARY</h1>")
                 .append("<h2>Test Case Results</h2><table><thead><tr>")
                 .append("<th>Test case</th><th>Description</th><th>Status</th><th>Duration</th><th>Details</th>")
                 .append("</tr></thead><tbody>");
         for (TestResultEvent result : TEST_RESULTS) {
-            html.append("<tr><td>").append(escapeHtml(result.testName))
-                    .append("</td><td>").append(escapeHtml(result.description))
+            boolean highlighted = result.testName.contains("GetAllUsersTest.getAllUsers");
+            html.append(highlighted ? "<tr class=\"highlighted-test\"><td>" : "<tr><td>")
+                    .append(escapeHtml(result.testName));
+            if (highlighted) {
+                html.append("<strong class=\"test-badge\">GET ALL USERS</strong>");
+            }
+            html.append("</td><td>")
+                    .append(escapeHtml(result.description))
                     .append("</td><td>").append(escapeHtml(result.status))
                     .append("</td><td>").append(result.durationMs).append(" ms</td><td>")
                     .append(escapeHtml(result.details)).append("</td></tr>");
