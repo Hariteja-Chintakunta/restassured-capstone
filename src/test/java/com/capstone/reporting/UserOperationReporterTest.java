@@ -37,4 +37,14 @@ public class UserOperationReporterTest {
                 UserOperationReporter.fieldsChanged(oldDetails, updatedDetails),
                 List.of("username"));
     }
+
+    @Test
+    public void parsesGetAllUsersPayloadAsUserList() {
+        Object users = UserOperationReporter.parseJsonPayload(
+                "[{\"id\":101,\"name\":\"John\"},{\"id\":102,\"name\":\"Jane\"}]");
+
+        Assert.assertTrue(users instanceof List<?>);
+        Assert.assertEquals(((List<?>) users).size(), 2);
+        Assert.assertEquals(((Map<?, ?>) ((List<?>) users).get(0)).get("name"), "John");
+    }
 }

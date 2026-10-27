@@ -2,6 +2,8 @@ package com.capstone.tests;
 
 import com.capstone.base.ApiBase;
 import com.capstone.reporting.UserOperationReportListener;
+import com.capstone.reporting.UserOperationReporter;
+import io.restassured.response.Response;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
@@ -14,9 +16,12 @@ public class GetAllUsersTest extends ApiBase {
 
     @Test(description = "TC01 - Get all users")
     public void getAllUsers() {
-        given().spec(requestSpec)
-                .when().get(USERS)
-                .then().log().ifValidationFails()
+        Response response = given().spec(requestSpec)
+                .when().get(USERS);
+
+        UserOperationReporter.recordUsersRetrieved(
+                response.getBody().asString(), response.getStatusCode());
+        response.then().log().ifValidationFails()
                 .statusCode(200)
                 .time(lessThan(MAX_TIME_MS))
                 .body("size()", greaterThan(0))

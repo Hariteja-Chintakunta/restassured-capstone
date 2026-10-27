@@ -112,6 +112,22 @@ public final class UserOperationReporter {
         record("USER CREATED", "Created User", summary, details);
     }
 
+    public static synchronized void recordUsersRetrieved(String responsePayload, int statusCode) {
+        Object users = parseJsonPayload(responsePayload);
+        Object totalUsers = users instanceof List<?> userList ? userList.size() : "Response is not a user list";
+
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("statusCode", statusCode);
+        summary.put("totalUsers", totalUsers);
+        summary.put("users", users);
+
+        Map<String, String> details = new LinkedHashMap<>();
+        details.put("Status Code", String.valueOf(statusCode));
+        details.put("Users Returned", String.valueOf(totalUsers));
+        details.put("Response Payload", responsePayload);
+        record("USERS RETRIEVED", "Get all users", summary, details);
+    }
+
     public static synchronized void recordUpdated(
             int userId, String oldUserPayload, String requestPayload, String responsePayload, int statusCode) {
         Map<String, Object> oldUser = parsePayload(oldUserPayload);
@@ -195,6 +211,13 @@ public final class UserOperationReporter {
             return new LinkedHashMap<>();
         }
         return JsonPath.from(payload).getMap("");
+    }
+
+    static Object parseJsonPayload(String payload) {
+        if (payload == null || payload.isBlank()) {
+            return "";
+        }
+        return JsonPath.from(payload).get();
     }
 
     private static String displayValue(Object value, String missingValue) {
