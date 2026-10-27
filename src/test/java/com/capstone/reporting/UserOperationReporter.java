@@ -4,6 +4,7 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import io.restassured.path.json.JsonPath;
+import org.testng.ITestResult;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -21,6 +22,7 @@ public final class UserOperationReporter {
 
     private static final Path REPORT_DIRECTORY = Path.of("target", "reports");
     private static final List<OperationEvent> EVENTS = new ArrayList<>();
+    private static final List<TestResultEvent> TEST_RESULTS = new ArrayList<>();
     private static final ThreadLocal<String> CURRENT_TEST =
             ThreadLocal.withInitial(() -> "Unattributed API operation");
     private static ExtentReports extent;
@@ -52,6 +54,34 @@ public final class UserOperationReporter {
 
     public static void clearCurrentTest() {
         CURRENT_TEST.remove();
+    }
+
+    public static synchronized void recordTestResult(ITestResult result, String status) {
+        String testName = testName(result);
+        String description = result.getMethod().getDescription();
+        long duration = result.getEndMillis() - result.getStartMillis();
+        Throwable throwable = result.getThrowable();
+        String details = throwable == null ? "" : throwable.getClass().getSimpleName() + ": " + throwable.getMessage();
+        TestResultEvent testResult = new TestResultEvent(
+                testName, description == null ? "" : description, status, duration, details);
+        TEST_RESULTS.add(testResult);
+
+        ExtentTest extentTest = extent.createTest(testName);
+        extentTest.info("Status: " + status);
+        extentTest.info("Duration: " + duration + " ms");
+        if (!testResult.description.isBlank()) {
+            extentTest.info("Description: " + testResult.description);
+        }
+        if (!details.isBlank()) {
+            extentTest.info("Details: " + details);
+        }
+        if ("FAIL".equals(status)) {
+            extentTest.fail("Test failed");
+        } else if ("SKIP".equals(status)) {
+            extentTest.skip("Test skipped");
+        } else {
+            extentTest.pass("Test passed");
+        }
     }
 
     public static synchronized void recordCreated(String requestPayload, String responsePayload, int statusCode) {
@@ -182,6 +212,21 @@ public final class UserOperationReporter {
                     .append("Test Method: ").append(event.testName).append('\n');
         }
 
+        report.append("\nTEST CASE RESULTS\n");
+        for (int i = 0; i < TEST_RESULTS.size(); i++) {
+            TestResultEvent result = TEST_RESULTS.get(i);
+            report.append("\nTest ").append(i + 1).append(": ")
+                    .append(result.testName).append('\n')
+                    .append("Status: ").append(result.status).append('\n')
+                    .append("Duration: ").append(result.durationMs).append(" ms\n");
+            if (!result.description.isBlank()) {
+                report.append("Description: ").append(result.description).append('\n');
+            }
+            if (!result.details.isBlank()) {
+                report.append("Details: ").append(result.details).append('\n');
+            }
+        }
+
         report.append("\n=================================================\n")
                 .append("TOTAL USERS CREATED : ").append(created).append('\n')
                 .append("TOTAL USERS UPDATED : ").append(updated).append('\n')
@@ -197,7 +242,19 @@ public final class UserOperationReporter {
                 .append("<style>body{font-family:Arial,sans-serif;margin:2rem;color:#222}")
                 .append("pre{white-space:pre-wrap;background:#f4f4f4;padding:1rem}")
                 .append("section{border-bottom:1px solid #ccc;padding:1rem 0}")
-                .append("</style></head><body><h1>TEST EXECUTION SUMMARY</h1>");
+                .append("table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:.6rem;text-align:left}")
+                .append("</style></head><body><h1>TEST EXECUTION SUMMARY</h1>")
+                .append("<h2>Test Case Results</h2><table><thead><tr>")
+                .append("<th>Test case</th><th>Description</th><th>Status</th><th>Duration</th><th>Details</th>")
+                .append("</tr></thead><tbody>");
+        for (TestResultEvent result : TEST_RESULTS) {
+            html.append("<tr><td>").append(escapeHtml(result.testName))
+                    .append("</td><td>").append(escapeHtml(result.description))
+                    .append("</td><td>").append(escapeHtml(result.status))
+                    .append("</td><td>").append(result.durationMs).append(" ms</td><td>")
+                    .append(escapeHtml(result.details)).append("</td></tr>");
+        }
+        html.append("</tbody></table><h2>User Operations</h2>");
         for (int i = 0; i < EVENTS.size(); i++) {
             OperationEvent event = EVENTS.get(i);
             html.append("<section><h2>Test Case ").append(i + 1).append(": ")
@@ -280,11 +337,23 @@ public final class UserOperationReporter {
                 .replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
     }
 
+    private static String testName(ITestResult result) {
+        String name = result.getTestClass().getName() + "." + result.getMethod().getMethodName();
+        String description = result.getMethod().getDescription();
+        return description == null || description.isBlank()
+                ? name
+                : name + " (" + description + ")";
+    }
+
     private record OperationEvent(
             String operation,
             String summaryLabel,
             String testName,
             Map<String, Object> summary,
             Map<String, String> details) {
+    }
+
+    private record TestResultEvent(
+            String testName, String description, String status, long durationMs, String details) {
     }
 }

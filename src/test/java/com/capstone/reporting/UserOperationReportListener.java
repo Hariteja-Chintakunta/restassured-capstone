@@ -29,16 +29,19 @@ public class UserOperationReportListener implements ISuiteListener, ITestListene
 
     @Override
     public void onTestSuccess(ITestResult result) {
+        UserOperationReporter.recordTestResult(result, "PASS");
         UserOperationReporter.clearCurrentTest();
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
+        UserOperationReporter.recordTestResult(result, "FAIL");
         UserOperationReporter.clearCurrentTest();
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
+        UserOperationReporter.recordTestResult(result, "SKIP");
         UserOperationReporter.clearCurrentTest();
     }
 }

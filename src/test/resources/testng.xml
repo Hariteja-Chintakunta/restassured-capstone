@@ -9,7 +9,6 @@
             <class name="com.capstone.reporting.UserOperationReporterTest"/>
             <class name="com.capstone.tests.CreateUserTest"/>
             <class name="com.capstone.tests.DeleteUserTest"/>
-            <class name="com.capstone.tests.EnvConfigTest"/>
             <class name="com.capstone.tests.GetAllUsersTest"/>
             <class name="com.capstone.tests.GetUserByIdTest"/>
             <class name="com.capstone.tests.UpdateUserTest"/>

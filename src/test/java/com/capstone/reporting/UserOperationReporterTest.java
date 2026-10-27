@@ -1,12 +1,14 @@
 package com.capstone.reporting;
 
 import org.testng.Assert;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Listeners(UserOperationReportListener.class)
 public class UserOperationReporterTest {
 
     @Test
