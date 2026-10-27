@@ -11,6 +11,9 @@
             <class name="com.capstone.tests.DeleteUserTest"/>
             <class name="com.capstone.tests.GetAllUsersTest"/>
             <class name="com.capstone.tests.GetUserByIdTest"/>
+            <class name="com.capstone.tests.GetProductListTest"/>
+            <class name="com.capstone.tests.GetProductDetailsTest"/>
+            <class name="com.capstone.tests.SearchProductTest"/>
             <class name="com.capstone.tests.UpdateUserTest"/>
         </classes>
     </test>
