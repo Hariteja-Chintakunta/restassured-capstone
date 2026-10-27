@@ -1,8 +1,10 @@
 package com.capstone.tests;
 
 import com.capstone.base.ApiBase;
+import com.capstone.reporting.UserOperationReporter;
 import com.capstone.reporting.UserOperationReportListener;
 import com.capstone.utils.TestDataUtil;
+import io.restassured.response.Response;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
@@ -21,9 +23,9 @@ public class CreateUserTest extends ApiBase {
         int id = com.capstone.utils.UserApiHelper.createUser(requestSpec, name, email);
 
         // 3. get the same user with the same userId (GET)
-        given().spec(requestSpec)
-                .when().get(USERS + "/" + id)
-                .then().log().ifValidationFails()
+        Response response = given().spec(requestSpec)
+                .when().get(USERS + "/" + id);
+        response.then().log().ifValidationFails()
                 .statusCode(200)
                 .time(lessThan(MAX_TIME_MS))
                 .body("id", equalTo(id))
@@ -31,6 +33,15 @@ public class CreateUserTest extends ApiBase {
                 .body("email", equalTo(email))
                 .body("gender", equalTo("male"))
                 .body("status", equalTo("active"));
+
+        UserOperationReporter.recordCheck("GET status code", 200, response.getStatusCode());
+        UserOperationReporter.recordCheck(
+                "GET response time below limit", "< " + MAX_TIME_MS + " ms", response.getTime() + " ms");
+        UserOperationReporter.recordCheck("Returned user ID matches created ID", id, response.jsonPath().getInt("id"));
+        UserOperationReporter.recordCheck("Returned user name matches request", name, response.jsonPath().getString("name"));
+        UserOperationReporter.recordCheck("Returned user email matches request", email, response.jsonPath().getString("email"));
+        UserOperationReporter.recordCheck("Returned user gender", "male", response.jsonPath().getString("gender"));
+        UserOperationReporter.recordCheck("Returned user status", "active", response.jsonPath().getString("status"));
 
         // clean up
         deleteUser(requestSpec, id);

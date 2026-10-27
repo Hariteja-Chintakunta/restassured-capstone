@@ -1,6 +1,7 @@
 package com.capstone.tests;
 
 import com.capstone.reporting.UserOperationReportListener;
+import com.capstone.reporting.UserOperationReporter;
 import com.capstone.utils.ApiSpecs;
 import com.capstone.utils.ProductApiHelper;
 import io.restassured.response.Response;
@@ -47,6 +48,13 @@ public class SearchProductTest {
                 .orElseThrow(() -> new AssertionError(
                         "No product name matched search keyword: " + SEARCH_KEYWORD));
         Assert.assertNotNull(matchingProduct.get("id"), "Searched product ID should be present");
+        UserOperationReporter.recordCheck("GET status code", 200, response.getStatusCode());
+        UserOperationReporter.recordCheck(
+                "GET response time below limit", "< " + MAX_TIME_MS + " ms", response.getTime() + " ms");
+        UserOperationReporter.recordCheck("Search results are not empty", "more than 0 products", products.size());
+        UserOperationReporter.recordCheck(
+                "Product name matches search keyword", SEARCH_KEYWORD, matchingProduct.get("title"));
+        UserOperationReporter.recordCheck("Searched product ID is present", "not null", matchingProduct.get("id"));
         ProductApiHelper.logProducts("TC08 - Products matching '" + SEARCH_KEYWORD + "':", products);
     }
 }

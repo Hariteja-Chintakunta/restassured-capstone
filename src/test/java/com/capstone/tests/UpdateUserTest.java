@@ -1,8 +1,10 @@
 package com.capstone.tests;
 
 import com.capstone.base.ApiBase;
+import com.capstone.reporting.UserOperationReporter;
 import com.capstone.reporting.UserOperationReportListener;
 import com.capstone.utils.TestDataUtil;
+import io.restassured.response.Response;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
@@ -26,14 +28,22 @@ public class UpdateUserTest extends ApiBase {
                 requestSpec, id, updatedName, email, "male", "inactive");
 
         // 4. get the same user with the same userId (GET) and confirm the change was saved
-        given().spec(requestSpec)
-                .when().get(USERS + "/" + id)
-                .then().log().ifValidationFails()
+        Response response = given().spec(requestSpec)
+                .when().get(USERS + "/" + id);
+        response.then().log().ifValidationFails()
                 .statusCode(200)
                 .time(lessThan(MAX_TIME_MS))
                 .body("id", equalTo(id))
                 .body("name", equalTo(updatedName))
                 .body("status", equalTo("inactive"));
+
+        UserOperationReporter.recordCheck("GET status code", 200, response.getStatusCode());
+        UserOperationReporter.recordCheck(
+                "GET response time below limit", "< " + MAX_TIME_MS + " ms", response.getTime() + " ms");
+        UserOperationReporter.recordCheck("Returned user ID matches updated ID", id, response.jsonPath().getInt("id"));
+        UserOperationReporter.recordCheck("Returned user name matches update", updatedName, response.jsonPath().getString("name"));
+        UserOperationReporter.recordCheck(
+                "Returned user status matches update", "inactive", response.jsonPath().getString("status"));
 
         // clean up
         deleteUser(requestSpec, id);

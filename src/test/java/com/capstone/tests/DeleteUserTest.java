@@ -1,8 +1,10 @@
 package com.capstone.tests;
 
 import com.capstone.base.ApiBase;
+import com.capstone.reporting.UserOperationReporter;
 import com.capstone.reporting.UserOperationReportListener;
 import com.capstone.utils.TestDataUtil;
+import io.restassured.response.Response;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
@@ -20,8 +22,10 @@ public class DeleteUserTest extends ApiBase {
         com.capstone.utils.UserApiHelper.deleteUser(requestSpec, id);
 
         // confirm the user is really gone
-        given().spec(requestSpec)
-                .when().get(USERS + "/" + id)
-                .then().statusCode(404);
+        Response response = given().spec(requestSpec)
+                .when().get(USERS + "/" + id);
+        response.then().statusCode(404);
+        UserOperationReporter.recordCheck(
+                "GET deleted user status code", 404, response.getStatusCode());
     }
 }

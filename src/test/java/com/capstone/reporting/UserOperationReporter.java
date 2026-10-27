@@ -25,6 +25,8 @@ public final class UserOperationReporter {
     private static final List<TestResultEvent> TEST_RESULTS = new ArrayList<>();
     private static final ThreadLocal<String> CURRENT_TEST =
             ThreadLocal.withInitial(() -> "Unattributed API operation");
+    private static final ThreadLocal<List<String>> CURRENT_CHECKS =
+            ThreadLocal.withInitial(ArrayList::new);
     private static ExtentReports extent;
     private static boolean started;
     private static boolean finished;
@@ -50,10 +52,22 @@ public final class UserOperationReporter {
 
     public static void setCurrentTest(String testName) {
         CURRENT_TEST.set(testName);
+        CURRENT_CHECKS.set(new ArrayList<>());
+    }
+
+    public static void recordCheck(String validation, Object expected, Object actual) {
+        CURRENT_CHECKS.get().add("PASS - " + validation
+                + " | Expected: " + expected
+                + " | Actual: " + actual);
+    }
+
+    static List<String> currentChecks() {
+        return List.copyOf(CURRENT_CHECKS.get());
     }
 
     public static void clearCurrentTest() {
         CURRENT_TEST.remove();
+        CURRENT_CHECKS.remove();
     }
 
     public static synchronized void recordTestResult(ITestResult result, String status) {
@@ -66,7 +80,8 @@ public final class UserOperationReporter {
         Throwable throwable = result.getThrowable();
         String details = throwable == null ? "" : throwable.getClass().getSimpleName() + ": " + throwable.getMessage();
         TestResultEvent testResult = new TestResultEvent(
-                testName, description == null ? "" : description, status, duration, details);
+                testName, description == null ? "" : description, status, duration, details,
+                currentChecks());
         TEST_RESULTS.add(testResult);
 
         ExtentTest extentTest = extent.createTest(testName);
@@ -78,6 +93,7 @@ public final class UserOperationReporter {
         if (!testResult.description.isBlank()) {
             extentTest.info("Description: " + testResult.description);
         }
+        testResult.checks.forEach(extentTest::info);
         if (!details.isBlank()) {
             extentTest.info("Details: " + details);
         }
@@ -251,6 +267,9 @@ public final class UserOperationReporter {
             if (!result.description.isBlank()) {
                 report.append("Description: ").append(result.description).append('\n');
             }
+            for (String check : result.checks) {
+                report.append("  ").append(check).append('\n');
+            }
             if (!result.details.isBlank()) {
                 report.append("Details: ").append(result.details).append('\n');
             }
@@ -274,9 +293,11 @@ public final class UserOperationReporter {
                 .append("table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:.6rem;text-align:left}")
                 .append(".highlighted-test{background:#e8f4ff;font-weight:600}")
                 .append(".test-badge{display:inline-block;margin-left:.5rem;padding:.2rem .5rem;background:#1769aa;color:#fff;border-radius:.25rem}")
+                .append("ul{margin:.25rem 0;padding-left:1.25rem}li{margin:.25rem 0}")
                 .append("</style></head><body><h1>TEST EXECUTION SUMMARY</h1>")
                 .append("<h2>Test Case Results</h2><table><thead><tr>")
-                .append("<th>Test case</th><th>Description</th><th>Status</th><th>Duration</th><th>Details</th>")
+                .append("<th>Test case</th><th>Description</th><th>Status</th><th>Duration</th>")
+                .append("<th>Passed checks</th><th>Failure details</th>")
                 .append("</tr></thead><tbody>");
         for (TestResultEvent result : TEST_RESULTS) {
             boolean highlighted = result.testName.contains("GetAllUsersTest.getAllUsers");
@@ -288,7 +309,16 @@ public final class UserOperationReporter {
             html.append("</td><td>")
                     .append(escapeHtml(result.description))
                     .append("</td><td>").append(escapeHtml(result.status))
-                    .append("</td><td>").append(result.durationMs).append(" ms</td><td>")
+                    .append("</td><td>").append(result.durationMs).append(" ms</td><td>");
+            if (result.checks.isEmpty()) {
+                html.append("No API checks recorded");
+            } else {
+                html.append("<ul>");
+                result.checks.forEach(check -> html.append("<li>")
+                        .append(escapeHtml(check)).append("</li>"));
+                html.append("</ul>");
+            }
+            html.append("</td><td>")
                     .append(escapeHtml(result.details)).append("</td></tr>");
         }
         html.append("</tbody></table><h2>User Operations</h2>");
@@ -391,6 +421,11 @@ public final class UserOperationReporter {
     }
 
     private record TestResultEvent(
-            String testName, String description, String status, long durationMs, String details) {
+            String testName,
+            String description,
+            String status,
+            long durationMs,
+            String details,
+            List<String> checks) {
     }
 }

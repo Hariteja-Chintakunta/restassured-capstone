@@ -27,5 +27,13 @@ public class GetAllUsersTest extends ApiBase {
                 .body("size()", greaterThan(0))
                 .body("[0].id", notNullValue())
                 .body("[0].email", containsString("@"));
+
+        var users = response.jsonPath().<java.util.Map<String, Object>>getList("");
+        UserOperationReporter.recordCheck("GET status code", 200, response.getStatusCode());
+        UserOperationReporter.recordCheck(
+                "GET response time below limit", "< " + MAX_TIME_MS + " ms", response.getTime() + " ms");
+        UserOperationReporter.recordCheck("Response contains users", "more than 0", users.size());
+        UserOperationReporter.recordCheck("First user ID is present", "not null", users.get(0).get("id"));
+        UserOperationReporter.recordCheck("First user email is valid", "contains @", users.get(0).get("email"));
     }
 }

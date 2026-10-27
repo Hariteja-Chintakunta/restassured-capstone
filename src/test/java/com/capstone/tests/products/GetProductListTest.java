@@ -1,6 +1,7 @@
 package com.capstone.tests;
 
 import com.capstone.reporting.UserOperationReportListener;
+import com.capstone.reporting.UserOperationReporter;
 import com.capstone.utils.ApiSpecs;
 import com.capstone.utils.ProductApiHelper;
 import io.restassured.response.Response;
@@ -41,6 +42,14 @@ public class GetProductListTest {
             Assert.assertNotNull(product.get("title"), "Product name should not be null");
             Assert.assertFalse(product.get("title").toString().isBlank(), "Product name should not be empty");
         }
+        UserOperationReporter.recordCheck("GET status code", 200, response.getStatusCode());
+        UserOperationReporter.recordCheck(
+                "GET response time below limit", "< " + MAX_TIME_MS + " ms", response.getTime() + " ms");
+        UserOperationReporter.recordCheck("Product list is not empty", "more than 0 products", products.size());
+        UserOperationReporter.recordCheck(
+                "Every product has an ID", "non-null IDs", products.size() + " products validated");
+        UserOperationReporter.recordCheck(
+                "Every product has a name", "non-empty names", products.size() + " products validated");
         ProductApiHelper.logProducts("TC06 - Products returned:", products);
     }
 }

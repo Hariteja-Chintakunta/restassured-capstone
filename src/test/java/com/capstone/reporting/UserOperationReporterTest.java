@@ -47,4 +47,14 @@ public class UserOperationReporterTest {
         Assert.assertEquals(((List<?>) users).size(), 2);
         Assert.assertEquals(((Map<?, ?>) ((List<?>) users).get(0)).get("name"), "John");
     }
+
+    @Test
+    public void recordsPassedValidationWithExpectedAndActualValues() {
+        UserOperationReporter.setCurrentTest("product-list-test");
+        UserOperationReporter.recordCheck("HTTP status code", 200, 200);
+
+        Assert.assertEquals(
+                UserOperationReporter.currentChecks(),
+                List.of("PASS - HTTP status code | Expected: 200 | Actual: 200"));
+    }
 }
