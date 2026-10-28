@@ -19,6 +19,7 @@
             <class name="com.capstone.tests.GetAllPostsTest"/>
             <class name="com.capstone.tests.CreatePostForUserTest"/>
             <class name="com.capstone.tests.GetPostCommentsTest"/>
+            <class name="com.capstone.tests.CreateUserDataProviderTest"/>
         </classes>
     </test>
 </suite>

@@ -1,5 +1,6 @@
 package com.capstone.utils;
 
+import com.capstone.models.User;
 import com.capstone.reporting.UserOperationReporter;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -14,8 +15,17 @@ public class UserApiHelper {
     public static final String USERS = "/public/v2/users";
     public static final long MAX_TIME_MS = 5000L;
 
+    public static int createUser(RequestSpecification spec, User user) {
+        return createUser(spec, user.getName(), user.getEmail(), user.getGender(), user.getStatus());
+    }
+
     public static int createUser(RequestSpecification spec, String name, String email) {
-        String requestPayload = TestDataUtil.userJson(name, email, "male", "active");
+        return createUser(spec, name, email, "male", "active");
+    }
+
+    public static int createUser(
+            RequestSpecification spec, String name, String email, String gender, String status) {
+        String requestPayload = TestDataUtil.userJson(name, email, gender, status);
         Response response = given().spec(spec)
                 .body(requestPayload)
                 .when().post(USERS);
