@@ -1,5 +1,6 @@
 package com.capstone.tests;
 
+import com.capstone.base.ApiBase;
 import com.capstone.reporting.UserOperationReportListener;
 import com.capstone.reporting.UserOperationReporter;
 import com.capstone.utils.ApiSpecs;
@@ -17,7 +18,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.lessThan;
 
 @Listeners(UserOperationReportListener.class)
-public class GetProductListTest {
+public class GetProductListTest extends ApiBase {
 
     @Test(description = "TC06 - Get product list; validate product ID, name, and status code")
     public void getProductListValidateProductIdNameAndStatusCode() {

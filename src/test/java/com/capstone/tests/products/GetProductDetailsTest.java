@@ -1,5 +1,6 @@
 package com.capstone.tests;
 
+import com.capstone.base.ApiBase;
 import com.capstone.reporting.UserOperationReportListener;
 import com.capstone.reporting.UserOperationReporter;
 import com.capstone.utils.ApiSpecs;
@@ -14,7 +15,7 @@ import static org.hamcrest.Matchers.lessThan;
 import static com.capstone.utils.UserApiHelper.MAX_TIME_MS;
 
 @Listeners(UserOperationReportListener.class)
-public class GetProductDetailsTest {
+public class GetProductDetailsTest extends ApiBase {
 
     private static final int PRODUCT_ID = 1;
 

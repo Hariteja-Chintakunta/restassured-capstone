@@ -1,26 +1,33 @@
 package com.capstone.base;
 
-import com.capstone.utils.PropertyReader;
+import com.capstone.server.LocalApiServer;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeSuite;
 
 public class ApiBase {
 
     protected RequestSpecification requestSpec;
 
-    @BeforeClass
+    @BeforeSuite(alwaysRun = true)
+    public void startLocalApiServer() {
+        LocalApiServer.start();
+    }
+
+    @AfterSuite(alwaysRun = true)
+    public void stopLocalApiServer() {
+        LocalApiServer.stop();
+    }
+
+    @BeforeClass(alwaysRun = true)
     public void setUp() {
-        String token = PropertyReader.get("token");
-        if (token.isBlank() || token.contains("PASTE_YOUR_TOKEN")) {
-            throw new IllegalStateException("Set a real token in " + PropertyReader.getEnv() + ".properties");
-        }
         requestSpec = new RequestSpecBuilder()
-                .setBaseUri(PropertyReader.get("baseUrl"))
+                .setBaseUri(LocalApiServer.baseUri())
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON)
-                .addHeader("Authorization", "Bearer " + token)
                 .addFilter((req, res, ctx) -> {
                     io.restassured.response.Response response = ctx.next(req, res);
                     System.out.println("API CALL  : " + req.getMethod() + " " + req.getURI());

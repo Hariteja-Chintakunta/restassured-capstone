@@ -7,6 +7,7 @@
         <classes>
             <class name="BuildCheckTest"/>
             <class name="com.capstone.reporting.UserOperationReporterTest"/>
+            <class name="com.capstone.tests.EnvConfigTest"/>
             <class name="com.capstone.tests.CreateUserTest"/>
             <class name="com.capstone.tests.DeleteUserTest"/>
             <class name="com.capstone.tests.GetAllUsersTest"/>
@@ -15,6 +16,9 @@
             <class name="com.capstone.tests.GetProductDetailsTest"/>
             <class name="com.capstone.tests.SearchProductTest"/>
             <class name="com.capstone.tests.UpdateUserTest"/>
+            <class name="com.capstone.tests.GetAllPostsTest"/>
+            <class name="com.capstone.tests.CreatePostForUserTest"/>
+            <class name="com.capstone.tests.GetPostCommentsTest"/>
         </classes>
     </test>
 </suite>
