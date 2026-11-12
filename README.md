@@ -13,7 +13,7 @@ REST Assured + Java + TestNG API automation suite for the GoRest API (https://go
 |---|------|----------------|
 | 1 | getPostList (CRITICAL) | GET /posts returns 200, a non-empty list, every id and title present, response under 5 seconds. Saves the first post's id and title. |
 | 2 | getPostDetails (CRITICAL, depends on 1) | GET /posts/{id} returns the same id and title. |
-| 3 | searchPost (NORMAL, depends on 1) | GET /posts?title=<first word of the title> returns matching posts, including the original post. |
+| 3 | searchPost (NORMAL, depends on 1) | GET /posts?title= using the first word of the saved title returns matching posts, including the original post. |
 
 Tests 2 and 3 depend on test 1 — if test 1 fails, they skip.
 
