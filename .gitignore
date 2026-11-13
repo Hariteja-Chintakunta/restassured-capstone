@@ -4,6 +4,7 @@ allure-results/
 .idea/
 src/test/resources/*.properties
 !src/test/resources/allure.properties
+!src/test/resources/qa.properties
 *.iml
 *.class
 *.log

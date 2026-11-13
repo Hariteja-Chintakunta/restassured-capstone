@@ -37,36 +37,28 @@ jobs:
 
       - name: Run tests
         run: mvn clean test --batch-mode
+        continue-on-error: true
 
-      - name: Load previous test report history
+      - name: Generate Allure report
+        run: mvn allure:report --batch-mode
+
+      - name: Load previous report history
         uses: actions/checkout@v4
-        if: always()
         continue-on-error: true
         with:
           ref: gh-pages
           path: gh-pages
 
-      - name: Copy history from previous runs
-        if: always()
+      - name: Merge history into report
         run: |
-          mkdir -p target/allure-results/history
           if [ -d gh-pages/history ]; then
-            cp -r gh-pages/history/* target/allure-results/history/
+            cp -r gh-pages/history target/site/allure-maven-plugin/history
           fi
-
-      - name: Generate Allure report
-        uses: simple-elf/allure-report-action@v1.12
-        if: always()
-        with:
-          allure_results: target/allure-results
-          allure_history: allure-history
-          keep_reports: 20
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
-        if: always()
         with:
-          path: allure-history
+          path: target/site/allure-maven-plugin
 
   deploy:
     needs: test
